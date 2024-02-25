@@ -81,22 +81,22 @@ int main(int NbParam, char *Param[])
 	AfficherSolution(Courante, LeProb, "SOLUTION INITIALE: ");
 	//**Enregistrement qualite solution de depart
 	LAlgo.FctObjSolDepart = Courante.FctObj;
-	
+	Best = Courante;
 	do
 	{
-		Next = GetSolutionVoisine(Courante, LeProb, LAlgo);
+		Courante = GetSolutionVoisine(Courante, LeProb, LAlgo);
 		//AfficherSolution(Courante, LeProb, "COURANTE: ");
 		//AfficherSolution(Next, LeProb, "NEXT: ");
-		if (Next.FctObj <= Courante.FctObj)	//**deplacement amelioration ou egalite
+		if (Courante.FctObj <= Best.FctObj)	//**deplacement amelioration ou egalite
 		{
-			Courante = Next;
-			cout << "CPT_EVAL: " << LAlgo.CptEval << "\t\tNEW COURANTE/OBJ: " << Courante.FctObj << endl;
+			Best = Courante;
+			cout << "CPT_EVAL: " << LAlgo.CptEval << "\t\tNEW COURANTE/OBJ: " << Best.FctObj << endl;
 			//AfficherSolution(Courante, LeProb, "NOUVELLE COURANTE: ");
 		}
 	}while (LAlgo.CptEval < LAlgo.NB_EVAL_MAX && Courante.FctObj!=0); //Critere d'arret
 	
-	AfficherResultats(Courante, LeProb, LAlgo);
-	AfficherResultatsFichier(Courante, LeProb, LAlgo,"Resultats.txt");
+	AfficherResultats(Best, LeProb, LAlgo);
+	AfficherResultatsFichier(Best, LeProb, LAlgo,"Resultats.txt");
 	
 	LibererMemoireFinPgm(Courante, Next, Best, LeProb);
 	
@@ -124,13 +124,11 @@ TSolution GetSolutionVoisine (const TSolution uneSol, TProblem unProb, TAlgo &un
 	// Initialisation du bloc de villes voisines
 	std::vector<int> blocVoisin;
 	
-
 	// On accepte le premier voisin comme solution courante
 	unGagnant = AppliquerVoisinage(uneSol, unProb, unAlgo, blocVoisin); //Premier voisin
 	std::vector<int> blocGagnant = blocVoisin;
 
 	static long critere_aspiration = unGagnant.FctObj;
-	listeTaboux.push_back(blocVoisin);
 
 	for (i = 1; i < unAlgo.TailleVoisinage; i++) //Permet de generer plusieurs solutions voisines
 	{
