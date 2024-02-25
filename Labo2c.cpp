@@ -127,6 +127,7 @@ TSolution GetSolutionVoisine (const TSolution uneSol, TProblem unProb, TAlgo &un
 
 	// On accepte le premier voisin comme solution courante
 	unGagnant = AppliquerVoisinage(uneSol, unProb, unAlgo, blocVoisin); //Premier voisin
+	std::vector<int> blocGagnant = blocVoisin;
 
 	static long critere_aspiration = unGagnant.FctObj;
 	listeTaboux.push_back(blocVoisin);
@@ -142,13 +143,8 @@ TSolution GetSolutionVoisine (const TSolution uneSol, TProblem unProb, TAlgo &un
 			{
 				unGagnant = unVoisin;
 
-				// Mise à jour du critère d'aspiration
-				critere_aspiration = unGagnant.FctObj;
-
-				// Ajout du bloc à la liste des taboux
-				listeTaboux[idTabou % unAlgo.LngListeTabous] = blocVoisin;
-
-				idTabou++;
+				// Mise à jour du bloc gagnant
+				blocGagnant = blocVoisin;
 			}
 				
 			else //Choix aléatoire si unVoisin et un Gagnant sont de même qualité
@@ -158,14 +154,23 @@ TSolution GetSolutionVoisine (const TSolution uneSol, TProblem unProb, TAlgo &un
 					{
 						unGagnant = unVoisin;
 
-						// Ajout du bloc à la liste des taboux
-						listeTaboux[idTabou % unAlgo.LngListeTabous] = blocVoisin;
-
-						idTabou++;
+						// Mise à jour du bloc gagnant
+						blocGagnant = blocVoisin;
 					}
 				}
 		}
 	}
+
+	// Mise à jour du critère d'aspiration
+	critere_aspiration = unGagnant.FctObj;
+
+	// Ajout du bloc à la liste des taboux
+	listeTaboux[idTabou % unAlgo.LngListeTabous] = blocGagnant;
+
+	idTabou++;
+
+
+
 	return (unGagnant);
 }
 
