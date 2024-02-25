@@ -108,11 +108,11 @@ int main(int NbParam, char *Param[])
 //DESCRIPTION: Creation d'une solution voisine a partir de la solution courante (uneSol) qui ne doit pas etre modifiee.
 //Dans cette fonction, appel de la fonction AppliquerVoisinage() pour obtenir une solution voisine selon un TYPE DE VOISINAGE selectionne + Definition la STRATEGIE D'ORIENTATION (Parcours/Regle de pivot).
 //Ainsi, si la RÈGLE DE PIVOT necessite l'etude de plusieurs voisins (TailleVoisinage>1), la fonction "AppliquerVoisinage()" sera appelee plusieurs fois.
-TSolution GetSolutionVoisine (const TSolution uneSol, TProblem unProb, TAlgo &unAlgo)
+TSolution GetSolutionVoisine(const TSolution uneSol, TProblem unProb, TAlgo& unAlgo)
 {
-	//Type (structure) de voisinage : 	OrOPT - Deplacement de 1, 2 ou 3 villes selectionnees aleatoirement 
-	//Parcours dans le voisinage : 		Aleatoire: taille du bloc aleatoire entre [1,3], positions de selection et d'insertion aleatoires 
-	//Regle de pivot : 					k-ImproveBEST (k étant donné en paramètre pour l'exécution du pgm)
+	//Type (structure) de voisinage :     OrOPT - Deplacement de 1, 2 ou 3 villes selectionnees aleatoirement 
+	//Parcours dans le voisinage :         Aleatoire: taille du bloc aleatoire entre [1,3], positions de selection et d'insertion aleatoires 
+	//Regle de pivot :                     k-ImproveBEST (k étant donné en paramètre pour l'exécution du pgm)
 
 	static std::vector<std::vector<int>> listeTaboux(unAlgo.LngListeTabous, std::vector<int>{});
 	static int idTabou = 0;
@@ -123,52 +123,42 @@ TSolution GetSolutionVoisine (const TSolution uneSol, TProblem unProb, TAlgo &un
 
 	// Initialisation du bloc de villes voisines
 	std::vector<int> blocVoisin;
-	
+	std::vector<TSolution> listVoisin;
+
 	// On accepte le premier voisin comme solution courante
-	unGagnant = AppliquerVoisinage(uneSol, unProb, unAlgo, blocVoisin); //Premier voisin
 	std::vector<int> blocGagnant = blocVoisin;
+	static long critere_aspiration = INT_MAX;
 
-	static long critere_aspiration = unGagnant.FctObj;
-
-	for (i = 1; i < unAlgo.TailleVoisinage; i++) //Permet de generer plusieurs solutions voisines
+	for (i = 0; i < unAlgo.TailleVoisinage; i++) //Permet de generer plusieurs solutions voisines
 	{
 		unVoisin = AppliquerVoisinage(uneSol, unProb, unAlgo, blocVoisin);
 
 		// Si le voisin est admissible 
-		if(SolEstAdmissible(listeTaboux, unVoisin, critere_aspiration, blocVoisin))
+		if (SolEstAdmissible(listeTaboux, unVoisin, critere_aspiration, blocVoisin))
 		{
-			if (unVoisin.FctObj < unGagnant.FctObj) //Conservation du meilleur
-			{
-				unGagnant = unVoisin;
+			listVoisin.push_back(unVoisin);
+		}
+	}
 
-				// Mise à jour du bloc gagnant
-				blocGagnant = blocVoisin;
-			}
-				
-			else //Choix aléatoire si unVoisin et un Gagnant sont de même qualité
-				if (unVoisin.FctObj == unGagnant.FctObj)
-				{
-					if (rand() % 2 == 0)
-					{
-						unGagnant = unVoisin;
-
-						// Mise à jour du bloc gagnant
-						blocGagnant = blocVoisin;
-					}
-				}
+	unGagnant = listVoisin[0];
+	//get the voisin with the minimum objective function
+	for (auto& voisin : listVoisin)
+	{
+		if (voisin.FctObj < unGagnant.FctObj)
+		{
+			unGagnant = voisin;
+			blocGagnant = blocVoisin;
 		}
 	}
 
 	// Mise à jour du critère d'aspiration
-	critere_aspiration = unGagnant.FctObj;
+	if (critere_aspiration > unGagnant.FctObj) 
+		critere_aspiration = unGagnant.FctObj;
 
 	// Ajout du bloc à la liste des taboux
 	listeTaboux[idTabou % unAlgo.LngListeTabous] = blocGagnant;
 
 	idTabou++;
-
-
-
 	return (unGagnant);
 }
 
