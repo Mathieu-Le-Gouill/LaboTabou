@@ -59,7 +59,7 @@ int main(int NbParam, char *Param[])
 {
 	TSolution Courante;		//Solution active au cours des iterations
 	TSolution Next;			//Solution voisine retenue a une iteration
-	TSolution Best;			//Meilleure solution depuis le debut de l'algorithme	//Non utilisee pour le moment 
+	TSolution Best;			//Meilleure solution depuis le debut de l'algorithme
 	TProblem LeProb;		//Definition de l'instance de probleme
 	TAlgo LAlgo;			//Definition des parametres de l'agorithme
 	string NomFichier;
@@ -81,6 +81,8 @@ int main(int NbParam, char *Param[])
 	AfficherSolution(Courante, LeProb, "SOLUTION INITIALE: ");
 	//**Enregistrement qualite solution de depart
 	LAlgo.FctObjSolDepart = Courante.FctObj;
+
+	//Mise en place de la meilleure solution
 	Best = Courante;
 	do
 	{
@@ -115,6 +117,7 @@ TSolution GetSolutionVoisine(const TSolution uneSol, TProblem unProb, TAlgo& unA
 	//Regle de pivot :                     k-ImproveBEST (k étant donné en paramètre pour l'exécution du pgm)
 
 	static std::vector<std::vector<int>> listeTaboux(unAlgo.LngListeTabous, std::vector<int>{});
+	static long critere_aspiration = INT_MAX;
 	static int idTabou = 0;
 
 	//k-Improve-Best
@@ -127,7 +130,6 @@ TSolution GetSolutionVoisine(const TSolution uneSol, TProblem unProb, TAlgo& unA
 
 	// On accepte le premier voisin comme solution courante
 	std::vector<int> blocGagnant = blocVoisin;
-	static long critere_aspiration = INT_MAX;
 
 	for (i = 0; i < unAlgo.TailleVoisinage; i++) //Permet de generer plusieurs solutions voisines
 	{
@@ -141,7 +143,7 @@ TSolution GetSolutionVoisine(const TSolution uneSol, TProblem unProb, TAlgo& unA
 	}
 
 	unGagnant = listVoisin[0];
-	//get the voisin with the minimum objective function
+	//On prend le voisin avec la meilleure fonction objectif
 	for (auto& voisin : listVoisin)
 	{
 		if (voisin.FctObj < unGagnant.FctObj)
@@ -159,6 +161,9 @@ TSolution GetSolutionVoisine(const TSolution uneSol, TProblem unProb, TAlgo& unA
 	listeTaboux[idTabou % unAlgo.LngListeTabous] = blocGagnant;
 
 	idTabou++;
+
+
+
 	return (unGagnant);
 }
 
